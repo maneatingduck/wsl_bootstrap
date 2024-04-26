@@ -1,3 +1,0 @@
-winuser=$(cmd.exe /c "echo %USERNAME%")&& echo $winuser
-
-IFS="," read -ra validparts <<< "oc,az,k"

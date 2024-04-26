@@ -1,9 +1,16 @@
 #!/usr/bin/env sh
 # get ssh keys
+winuser=$(cmd.exe /c "echo %USERNAME%")
+if [ $winuser == "" ]; then 
+  echo "windows username not detected, please enter it"&&read winuser
+else
+    echo $winuser
+fi
+
 cd ~
-ln -s /mnt/c/Users/$WINDOWS_USER/
-cp -rv $WINDOWS_USER/.ssh .
-cp -rv $WINDOWS_USER/.gitconfig .
+ln -s /mnt/c/Users/$winuser/
+cp -rv $winuser/.ssh .
+cp -rv $winuser/.gitconfig .
 chmod 700 .ssh/id_rsa
 cat << \EOF >> ~/.bashrc
 if  type "conemuc.exe" 2&>/dev/null; then

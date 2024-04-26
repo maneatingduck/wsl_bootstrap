@@ -1,7 +1,5 @@
 #!/usr/bin/env sh
-echo Brew
 cd ~
-echo "bootstrap: install brew"
 
 sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 # install tsh
 pushd .
-cd ~
+cd ~mkdi
 mkdir -p bin
 # find latest version for Linux 64-bit at https://goteleport.com/download/#install-links
 export TELEPORT_FILE=teleport-v13.4.21-linux-amd64-bin.tar.gz

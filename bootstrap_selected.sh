@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
+# . ./bootstrap_selected.sh "brew oc kubectl krew k9s"
 inp=$1
-availableactionsstring="brew winconfig terraform k9s az oc kubectl krew noaptupdate nonukesnap"
+availableactionsstring="brew winconfig terraform k9s az oc kubectl krew noaptupdate nonukesnap docker"
 if [[ $inp == "all" ]];then
     inp=$(echo $availableactionsstring |sed 's/noaptupdate\|nonukesnap//g' )
     # echo "all -> $inp"
@@ -29,14 +30,18 @@ IFS=" " read -ra inputactions <<< $inp
 for action in "${inputactions[@]}"
 do
     echo "action $action"
-    read
+    # read
     cd $SCRIPTPATH
     if [ $action == "brew"      ];then echo "run script for $action"; . scripts/brew.sh          ;fi
-    if [ $action == "krew"      ];then echo "run script for $action"; . scripts/krew.sh          ;fi
     if [ $action == "az"        ];then echo "run script for $action"; . scripts/az.sh            ;fi
     if [ $action == "oc"        ];then echo "run script for $action"; . scripts/oc.sh            ;fi
-    if [ $action == "k9s"       ];then echo "run script for $action"; . scripts/k9s.sh           ;fi
     if [ $action == "kubectl"   ];then echo "run script for $action"; . scripts/kubectl.sh       ;fi
+    if [ $action == "krew"      ];then echo "run script for $action"; . scripts/krew.sh          ;fi
+    if [ $action == "k9s"       ];then echo "run script for $action"; . scripts/k9s.sh           ;fi
+    if [ $action == "k3d"       ];then echo "run script for $action"; . scripts/k3d.sh           ;fi
+    if [ $action == "tsh"       ];then echo "run script for $action"; . scripts/tsh.sh           ;fi
+    if [ $action == "jq"        ];then echo "run script for $action"; . scripts/jq.sh           ;fi
+    if [ $action == "docker"    ];then echo "run script for $action"; . scripts/docker.sh        ;fi
     if [ $action == "terraform" ];then echo "run script for $action"; . scripts/terraform.sh     ;fi
     if [ $action == "winconfig" ];then echo "run script for $action"; . scripts/winconfig.sh     ;fi
 done

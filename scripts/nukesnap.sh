@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# remove snap. This saves a lot of space
+# desc: remove snap. This saves a lot of space
 echo "Removing snap..."
 # Stop the daemon
 sudo systemctl disable --now snapd

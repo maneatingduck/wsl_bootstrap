@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# install brew, which is a prerequisite for several other actions
+# desc: install brew, which is a prerequisite for several other actions
 echo Brew
 cd ~
 echo "bootstrap: install brew"
@@ -12,6 +12,7 @@ sudo apt-get install build-essential -y
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 # brew install chezmoi
 # chezmoi init git@gitlab.intility.com:aa303/dotfiles.git
+export HOMEBREW_NO_AUTO_UPDATE=1
 if [ ! -f ~/Brewfile ]; then
 cat << \EOF >> ~/Brewfile
 tap "homebrew/bundle"

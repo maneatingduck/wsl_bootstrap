@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# copies ssh keys and gitconfig from windows, sets prompt and case insensitive completion
+# desc: copies ssh keys and gitconfig from windows, sets prompt and case insensitive completion
 # get ssh keys
 # winuser=$(cmd.exe /c "echo %USERNAME%")
 winuser=$(powershell.exe -NoProfile -NonInteractive -Command "\$Env:UserName")

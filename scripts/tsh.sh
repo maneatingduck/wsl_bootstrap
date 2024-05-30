@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# install tsh
+# desc: install tsh
 pushd .
 cd ~mkdi
 mkdir -p bin

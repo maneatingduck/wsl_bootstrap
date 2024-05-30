@@ -1,18 +1,23 @@
 #!/usr/bin/env sh
 # . ./bootstrap_selected.sh "brew oc kubectl krew k9s"
 inp=$1
-availableactionsstring="brew winconfig terraform k9s az oc kubectl krew noaptupdate nonukesnap docker"
+availableactionsstring="noaptupdate nonukesnap brew winconfig terraform k9s az oc kubectl krew docker tsh k3d jq"
 if [[ $inp == "all" ]];then
     inp=$(echo $availableactionsstring |sed 's/noaptupdate\|nonukesnap//g' )
     # echo "all -> $inp"
 fi
+if [[ $inp == "openshift" ]];then
+    inp="brew winconfig terraform k9s az oc kubectl krew docker tsh k3d jq"
+    # echo "all -> $inp"
+fi
+
 inp=$(echo $inp |sed 's/ +/ /g' )
 printf "Running the following:\n$inp\nenter to accept"
 read
 SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )">/dev/null 2>&1
 echo $SCRIPTPATH
 IFS=" " read -ra availableactions <<< $availableactionsstring
-IFS="," read -ra rawdeps <<< "oc brew,k9s brew"
+IFS="," read -ra rawdeps <<< "brew oc,brew k9s"
 if [[ ${inputactions[@]} =~ "nonukesnap" ]];then
     echo nonukesnap input
 fi

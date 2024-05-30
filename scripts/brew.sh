@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+# install brew, which is a prerequisite for several other actions
 echo Brew
 cd ~
 echo "bootstrap: install brew"

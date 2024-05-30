@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+# installs docker from the docker-ce package
 echo docker the ubuntu way
 for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg >/dev/null; done
 # Add Docker's official GPG key:

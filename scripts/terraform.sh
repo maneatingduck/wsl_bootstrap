@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+# installs terraform AND vault 
 cd ~
 
 sudo apt-get update && sudo apt-get install -y gnupg software-properties-common

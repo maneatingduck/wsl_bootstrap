@@ -3,8 +3,10 @@ inp="${1:-help}"
 #get available scripts
 availableactionsstring="$(ls -1 scripts/*.sh|sed -E 's#scripts/(.*)\.sh#\1#'|tr '\n' ' '|sed 's# $##')"
 
-#TODO: check that all selected and preset actions are available as scripts
-#TODO: dynamic prereqs
+# TODO: add spaces to all action strings for processing
+# TODO: check that all selected and preset actions are available as scripts
+# TODO: dynamic prereqs from comment in install script: grep --color=never -ire "# *prereq *: *" scripts/|sed -E 's#^[^/]+/([^\.]+).*: *([^\s]+)+ *#\1 \2#'
+# TODO: presets from file
 
 declare -A presets=(
 ["all"]=$availableactionsstring 
@@ -18,8 +20,8 @@ if [[ $inp =~ "help" ]]; then
     if [[ $sourced == "0" ]]; then scriptname=$0;else scriptname=${BASH_SOURCE[0]};fi
 
     printf "Usage: $scriptname \"<space separated list of actions or presets>\"\n\n"
-    printf "This script will install your selection of utilities in wsl.\n"
-    printf "It will also remove snap and run apt update/upgrade.\n\n"
+    printf "This script will install your selection of utilities in a wsl Ubuntu distro.\n"
+    printf "It will also run apt update/upgrade.\n\n"
     # printf  "available actions: '$availableactionsstring'\n\n"
     
     printf "availabple presets:\n\n"
@@ -29,13 +31,13 @@ if [[ $inp =~ "help" ]]; then
     done
     # for the documentation feature to work, add a second commented line after #!/usr/bin/bash in the action script 
     # this will be shown to the user:
-    #!/usr/bin/env sh
+    #!/usr/bin/bash
     # installs k3d, a k3s management utility. Prereq: brew
 
     printf "\nAvailable actions:\n\n"
     for s in ${availableactionsstring// / }
     do
-        printf "$s:"; printf %*s'' $((20 - ${#s})) ; printf "$(grep -E "^#" scripts/$s.sh |head -n 2|tail -n 1|sed -E 's#^[#\s]+##')\n"
+        printf "$s:"; printf %*s'' $((20 - ${#s})) ; printf "$(grep -E "^#" scripts/$s.sh |grep -v "^#!/" |head -n 1|sed -E 's#^[#\s]+##')\n"
     done
 
     printf "\n"
@@ -82,11 +84,11 @@ do
         sorting="$sorting  ${rp[0]}"
     fi
 done
+
+# sort actions so that prerews (ie brew) are installed before dependant action (ie k3d)
 unsorted=$sorting
 echo "sort start: '$sorting'"
 sortedactions=""
-
-
 while [[ $sorting != $sortedactions ]]
 do
     sortedactions=$sorting

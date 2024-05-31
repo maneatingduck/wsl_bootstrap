@@ -251,12 +251,14 @@ printf '\n'
 
 declare -A outputs=() 
 allstart=$(($(date +%s%N)/1000000))
-mkdir -p logs; rm logs/*
+mkdir -p logs; 
 for a in ${effectiveactions// / };do 
+    echo -n ''>logs/$a.txt
+    echo -n ''>logs/allactions.txt
     start=$(($(date +%s%N)/1000000))
    cd $dirname
    printf "Executing '%s'" "$a";
-    (. ./scripts/$a.sh >logs/$a.txt 2>&1) && o="OK"||o="FAIL" 
+    (. ./scripts/$a.sh 2>&1|tee logs/$a.txt >> logs/allactions.txt) && o="OK"||o="FAIL" 
     end=$(($(date +%s%N)/1000000))
     ms=$(($end-$start))
     # printf 'failtrain %s' "$o"

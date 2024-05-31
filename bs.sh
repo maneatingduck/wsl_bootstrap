@@ -173,28 +173,33 @@ for a in ${n// / } ;do
 done    
 
 
-if [[ -z $effectiveactions ]];then  
-    help=1
-    [[ -v $debug ]] && printf 'debug: empty input, show help and exit\n'
-else
-    # we always want to clean apt cache last
-    aptu=""
-    mc=" aptclean "
-    effectiveactions="$(sed -E "s#$mc##g"<<<"$effectiveactions")"
-    effectiveactions="${effectiveactions}${mc}"
-    
-    # ...and will put aptupgrade first, but won't add aptupgrade if explicitly requested not to
-    ma=" aptupgrade "
-    effectiveactions="$(sed -E "s#$ma##g"<<<"$effectiveactions")"
-    if [[ -z $noapt ]];then
-        aptu="aptupgrade, "
-        effectiveactions="${ma}${effectiveactions}"
+    if [[ -z $effectiveactions ]];then  
+        help=1
+        [[ -v $debug ]] && printf 'debug: empty input, show help and exit\n'
+
+    # elif [[ -z $help ]];then
+    else
+        # we always want to clean apt cache last
+
+        aptu=""
+        mc=" aptclean "
+        effectiveactions="$(sed -E "s#$mc##g"<<<"$effectiveactions")"
+        effectiveactions="${effectiveactions}${mc}"
+        
+        # ...and will put aptupgrade first, but won't add aptupgrade if explicitly requested not to
+        ma=" aptupgrade "
+        effectiveactions="$(sed -E "s#$ma##g"<<<"$effectiveactions")"
+        if [[ -z $noapt ]];then
+            aptu="aptupgrade, "
+            effectiveactions="${ma}${effectiveactions}"
+        fi
+        [[ -v $help ]] && printf 'inf: added %saptclean\n' "$aptu"
+      
     fi
-    [[ -v $help ]] && printf 'inf: added %saptclean\n' "$aptu"
-fi
 
 effectiveactions="$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")"
-[[ -n $help && -z $effectiveactions ]] && printf "inf: effective actions: '%s'\n" "$effectiveactions"
+ [[ $effectiveactions ]] && 
+printf "inf: effective actions: '%s'\n" "$effectiveactions"
 
 if [[ $help == 1 ]]; then
 

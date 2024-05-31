@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
-# desc: removes cache from apt
-# postreq: cleanapt
+# desc: updates apt and upgrades all packages
+# postreq: aptclean
 
 sudo apt-get update
 sudo apt-get upgrade -y

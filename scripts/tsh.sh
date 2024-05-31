@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# install tsh
+# desc: install teleport tsh
 cd ~
 mkdir -p bin
 # find latest version for Linux 64-bit at https://goteleport.com/download/#install-links

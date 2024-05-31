@@ -9,19 +9,23 @@ if [[ $sourced == "0" ]]; then scriptname=$0;else scriptname=${BASH_SOURCE[0]};f
 debug=''
 autoexec=''
 help=''
+noapt=''
 if [[ $inp == "" ]]; then help=1;fi
 
 inpspaces=" $(sed -E 's# +#  #g' <<<"$inp") "
+m=" help | --help "
+if [[ $inpspaces =~ $m ]]; then help=1;printf 'inf: help requested\n'; fi
 
-m=" debug "
+m=' debug '
 if [[ $inpspaces =~ $m ]]; then debug=1;printf 'debug: debug enabled\n'; fi
 
+m=" noapt "
+if [[ $inpspaces =~ $m ]]; then noapt=1;printf 'debug: noapt -- don''t add aptupgrade automatically\n'; fi
 
 m=" autoexec "
 if [[ $inpspaces =~ $m ]]; then autoexec=1;printf 'inf: autoexec enabled\n';fi
 
-
-m=' autoexec | debug '
+m=' autoexec | debug | noapt '
 inpspaces=$(sed -E "s#$m##g"<<<"$inpspaces")
 inpspaces=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$inpspaces")
 inp=$inpspaces
@@ -101,7 +105,7 @@ for key in "${!presets[@]}"; do
     if [[ $a =~ $m  ]];then
         # printf "Before remove '%s'\n" "${presets["$key"]}"
         presets["$key"]=$(sed -E "s#$m#\1#g;"<<<"${presets["$key"]}")
-        printf "Removing winsshkeys from preset '%s', it must be included explicitly\n" "$key"
+        [[ -v $debug ]] && printf "debug: removing winsshkeys from preset '%s', it must be included explicitly\n" "$key"
         # printf "after remove '%s'\n" "${presets["$key"]}"
     fi
 done
@@ -224,12 +228,12 @@ for a in ${n// / } ;do
     fi
 done    
 
-#add aptupgrade and cleanapt as mandatory
+#add aptupgrade and aptclean as mandatory
 # printf 'effectiveactions %s\n' "$effectiveactions"
 # if [[ -z "$effectiveactions" ]];then
-    # effectiveactions="$(sed -E 's# aptupgrade | cleanapt ##g'<<<"$effectiveactions")"
-    # effectiveactions=" aptupgrade $effectiveactions cleanapt "
-    # printf 'added/moved aptupgrade and cleanapt to first/last respectively.'
+    # effectiveactions="$(sed -E 's# aptupgrade | aptclean ##g'<<<"$effectiveactions")"
+    # effectiveactions=" aptupgrade $effectiveactions aptclean "
+    # printf 'added/moved aptupgrade and aptclean to first/last respectively.'
 # fi
 
 
@@ -238,13 +242,30 @@ done
 if [[ -z $effectiveactions ]];then  
     help=1
     [[ -v $debug ]] && printf 'debug: empty input, show help and exit\n'
-else 
-        effectiveactions="$(sed -E 's# aptupgrade | cleanapt ##g'<<<"$effectiveactions")"
-    effectiveactions=" aptupgrade $effectiveactions cleanapt "
-    printf 'added/moved aptupgrade and cleanapt to first/last respectively.\n'
+else
+    # we always want to clean apt cache last
+    aptu=""
+    mc=" aptclean "
+    effectiveactions="$(sed -E "s#$mc##g"<<<"$effectiveactions")"
+    effectiveactions="${effectiveactions}${mc}"
+    
+    # ...and will put aptupgrade first, but won't add aptupgrade if explicitly requested not to
+    ma=" aptupgrade "
+    effectiveactions="$(sed -E "s#$ma##g"<<<"$effectiveactions")"
+    if [[ -z $noapt ]];then
+        aptu="aptupgrade, "
+        effectiveactions="${ma}${effectiveactions}"
+    fi
+    # if [[ $effectiveactions =~ $ma ]];then
+    #     effectiveactions="$(sed -E "s#$ma##g"<<<"$effectiveactions")"
+    #     if [[ -n $noapt ]];then 
+    #         effectiveactions="${ma}${effectiveactions}"
+    #     fi
+    # fi
+    [[ -v $help ]] && printf 'inf: added %saptclean\n' "$aptu"
 fi
 effectiveactions="$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")"
-printf "inf: effective actions: '%s'\n" "$effectiveactions"
+[[ -v $help ]] && printf "inf: effective actions: '%s'\n" "$effectiveactions"
 
 # help=1
 if [[ $help == 1 ]]; then
@@ -252,9 +273,14 @@ if [[ $help == 1 ]]; then
     printf "\nUsage: %s <space separated list of actions or presets>\n\n" "$scriptname"
     printf "This script will install your selection of utilities in a wsl Ubuntu distro.\n"
     printf "It will also run apt update/upgrade.\n\n"
+    printf "Special actions:\n"
+    printf "help/--help or no input: show usage\n"
+    printf "autoexec: execute without asking \n"
+    printf "debug: execute without asking \n"
+    printf "noapt: don't add aptupgrade automatically. aptclean will always be run\n"
     # printf  "available actions: '$availableactionsstring'\n\n"
     
-    printf "Available presets:\n\n"
+    printf "\nAvailable presets:\n\n"
     l="$(printf '%s\n' "${!presets[@]}"|wc -L)"
     k="$(printf '%s\n' "${!presets[@]}"|sort)"
     for p in $k
@@ -302,7 +328,7 @@ printf '\nAuthorizing sudo: '
 sudo ls >/dev/null
 printf '\n'
 # printf 'sudo apt update/upgrade\n'
-declare -A outputs=()
+declare -A outputs=() 
 allstart=$(($(date +%s%N)/1000000))
 mkdir -p logs; rm logs/*
 for a in ${effectiveactions// / };do 
@@ -313,7 +339,7 @@ for a in ${effectiveactions// / };do
     end=$(($(date +%s%N)/1000000))
     ms=$(($end-$start))
     # printf 'failtrain %s' "$o"
-    os=$(printf '%s: ' "$o";printf %*s'' $((4 - ${#ms}));printf "%s ms" "$ms")
+    os=$(printf '%s: ' "$o";printf %*s'' $((8 - ${#ms}));printf "%s ms" "$ms")
     outputs["$a"]=$(printf '%s' "$os")
     printf %*s'' $((20 - ${#a}));printf "%s\n" "$os"
 done
@@ -329,3 +355,4 @@ printf '\nAll done in %s ms \n\n' "$allms"
 # done
 
 . ~/.bashrc
+. ~/.profile

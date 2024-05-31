@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# desc: copies ssh keys from windows, treat your tar file as a secret if using this
+# desc: Excluded by default if not explicitly requested. Copies ssh keys from windows, treat your tar file as a secret if using this. 
 # get ssh keys
 # winuser=$(cmd.exe /c "echo %USERNAME%")
 winuser=$(powershell.exe -NoProfile -NonInteractive -Command "\$Env:UserName")

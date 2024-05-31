@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 # desc: install brew, which is a prerequisite for several other actions
-# postreq: cleanbrew
+# postreq: brewclean
 echo Brew
 cd ~
 echo "bootstrap: install brew"

@@ -1,16 +1,40 @@
 #!/usr/bin/bash
 inp="$*"
+dirname="$(realpath $(dirname "${BASH_SOURCE[0]}"))"
 # inp="${i:-help}"
-help=0
-if [[ $inp == "" ]]; then help=1;fi
-
-# printf "%s\n" "$inp"
 (return 0 2>/dev/null) && sourced=1 || sourced=0
 if [[ $sourced == "0" ]]; then scriptname=$0;else scriptname=${BASH_SOURCE[0]};fi
 
+
+debug=''
+autoexec=''
+help=''
+if [[ $inp == "" ]]; then help=1;fi
+
+inpspaces=" $(sed -E 's# +#  #g' <<<"$inp") "
+
+m=" debug "
+if [[ $inpspaces =~ $m ]]; then debug=1;printf 'debug: debug enabled\n'; fi
+
+
+m=" autoexec "
+if [[ $inpspaces =~ $m ]]; then autoexec=1;printf 'inf: autoexec enabled\n';fi
+
+
+m=' autoexec | debug '
+inpspaces=$(sed -E "s#$m##g"<<<"$inpspaces")
+inpspaces=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$inpspaces")
+inp=$inpspaces
+# printf "'%s'\n" "$inpspaces"
+
+# if [[ $sourced == "1" ]]; then return; else exit; fi
+# printf "%s\n" "$inp"
+
 #get available scripts
 availableactionsstring="$(ls -1 scripts/*.sh|sed -E 's#scripts/(.*)\.sh#\1#'|tr '\n' ' '|sed 's# $##')"
-# echo "'$availableactionsstring'"
+
+[[ -v $debug ]] && printf 'debug: available actions: '%s'\n' "$availableactionsstring"
+
 declare -A availableactions=()
 # for s in $availableactionsstring
 # IFS=" " read -ra a <<< $inp
@@ -33,7 +57,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     # echo $line
     line=$(sed 's#[\r\n]##' <<<$line) 
     m="^([^ ]+) *: *(.*)$"
-    if [[ ! $line =~ $m ]];then echo "preset.txt: invalid line '$line'";continue;fi
+    if [[ ! $line =~ $m ]];then echo "warning: preset.txt: invalid line '$line'";continue;fi
     preset=${BASH_REMATCH[1]}
     actions=${BASH_REMATCH[2]}
     # echo "processing line $line"
@@ -51,18 +75,36 @@ while IFS= read -r line || [ -n "$line" ]; do
         # printf "preset is now '$preset'\n"
         # printf "action is now '$a'\n"
         # printf "preset $preset: testing action '$a'\n"
+        # printf "'%s' '%s'\n" "${availableactions[$a]}" "$a"
+        # if [[ -v "${availableactions["winsettings"]}" ]] 
         if [[ ! ${availableactions[$a]+"a"} == "a" ]]; 
         then 
-            printf "WARNING: preset.txt: '%s': action '%s' not in available actions\n" "$preset" "$a";help=1
+            printf "warning: preset.txt: '%s': action '%s' not in available actions\n" "$preset" "$a"
+            help=1
         else
             acts="$acts $a"
         fi
     done
     # printf "$preset : '$actions'"
+    acts=$(sed 's#^ ##' <<<"$acts")
+    # s+=([$preset]=$acts)
     presets+=([$preset]=$(sed 's#^ ##' <<<"$acts"))
+    [[ -v $debug ]] && printf "debug: preset.txt read preset '%s' with acts '%s'\n" "$preset" "$acts"
 done < presets.txt
-# add/replace
+# add/replace all in presets
 presets+=([all]=$availableactionsstring)
+
+# remove winsshkeys from presets
+for key in "${!presets[@]}"; do   
+    m=" *winsshkeys( *)"
+    a="${presets["$key"]}"
+    if [[ $a =~ $m  ]];then
+        # printf "Before remove '%s'\n" "${presets["$key"]}"
+        presets["$key"]=$(sed -E "s#$m#\1#g;"<<<"${presets["$key"]}")
+        printf "Removing winsshkeys from preset '%s', it must be included explicitly\n" "$key"
+        # printf "after remove '%s'\n" "${presets["$key"]}"
+    fi
+done
 # for key in ${!presets[@]}; do   echo "${key}, ${presets[${key}]}"; done
 
 # get descriptions, prereqs, and postreqs
@@ -77,11 +119,11 @@ while IFS= read -r line || [ -n "$line" ]; do
     line=${line//$'\n'/}
     m="scripts/([^\.]+)\.[^:]+:[# ]*([^ #]+): *(.*) *$"
     # echo $line
-    if [[ ! $line =~ $m ]]; then printf "documentation line '%s' does not match '$m'" "$line";fi
+    if [[ ! $line =~ $m ]]; then printf "warning: documentation line '%s' does not match '$m'" "$line";fi
     a=${BASH_REMATCH[1]}
     t=${BASH_REMATCH[2]}
     v=${BASH_REMATCH[3]}
-    # printf "action '%s' type '%s' value '%s'\n" "$a" "$t" "$v"
+    [[ -v $debug ]] && printf "debug: documentation for action '%s' type '%s' value '%s'\n" "$a" "$t" "$v"
     if [[ $t == "desc" ]]; then availableactions[$a]=$v;continue;fi
     if [[ $t == "prereq" ]]; then prereqs+=("$a $v");prereqstrings["$a"]="${prereqstrings["$a"]} $v";continue;fi
     if [[ $t == "postreq" ]]; then postreqstrings["$a"]="${postreqstrings["$a"]} $v";continue;fi
@@ -92,26 +134,21 @@ done <<< "$(grep --color=never -ire '# *\(prereq\|desc\|postreq\) *: *' scripts/
 for key in "${!prereqstrings[@]}"; do   prereqstrings["$key"]=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"${prereqstrings["$key"]}"); done
 for key in "${!postreqstrings[@]}"; do   postreqstrings[$key]=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"${postreqstrings[$key]}"); done
 
-# for key in "${!availableactions[@]}"; do   echo "${key}, ${availableactions[${key}]}"; done
-# printf "prereqstrings\n";for key in "${!prereqstrings[@]}"; do   printf "'%s', '%s'\n" "$key" "${prereqstrings[${key}]}"; done
-# printf "postreqstrings\n";for key in "${!postreqstrings[@]}"; do   printf "'%s', '%s'\n" "$key" "${postreqstrings[${key}]}"; done
-    
-# TODO: check if all input is in available actions or presets
-#build input from input and presets
+[[ -v $debug ]] && for key in "${!prereqstrings[@]}";do printf 'debug: prereqs: '%s' needs '%s'\n' "$key" "${prereqstrings["$key"]}";done
+[[ -v $debug ]] && for key in "${!postreqstrings[@]}";do printf 'debug: postreqs: '%s' needs '%s'\n' "$key" "${postreqstrings["$key"]}";done
 
-# declare -A inputarray=()
+
 effectiveactions=""
 for s in ${inp// / }
 do
     if [[ ${presets[$s]+"a"} == "a" ]];then 
-        # for a in ${presets[$s]// / } ;do ${inputarray[$a]=""};done
+        printf "inf: preset requested, merging with input actions: '%s': '%s'\n" "$s" "${presets[$s]}"
         for a in ${presets[$s]// / } ;do effectiveactions="$effectiveactions $a ";done
     else
         effectiveactions="$effectiveactions $s "
     fi
 done
-# e=$effectiveactions
-# printf "prereqs #1\n"
+[[ -v $debug ]] && printf 'debug: checking actions for prereqs\n'
 n=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")
 for a in ${n// / } ;do
     if [[ ${prereqstrings[$a]+"a"} == "a"  ]];then 
@@ -119,13 +156,14 @@ for a in ${n// / } ;do
         for p2 in ${p// / };do
             m=" $p2 "
             if [[ ! $effectiveactions =~ $m ]];then
-                printf "%s needs prereq %s, adding it\n" "$a" "$p2"
+                printf "inf: %s needs prereq %s, adding it\n" "$a" "$p2"
                 effectiveactions=" $p2 $effectiveactions"
             fi
         done
     fi
 done
 # sort actions so that prereqs are installed before postreqs
+[[ -v $debug ]] && printf 'debug: sorting actions so that prereqs come first\n'
 sorting=$effectiveactions
 sortedactions=""
 while [[ $sorting != "$sortedactions" ]]
@@ -164,6 +202,8 @@ do
     #     echo "sorted:   $sorting"
     # done
 done
+
+[[ -v $debug ]] && printf 'debug: checking actions for postreqs\n'
 effectiveactions=$(sed -E 's#\s+#  #g;s# *$|^ *# #g'<<<"$sortedactions")
 # printf "'%s'\n" "$effectiveactions"
 #add postreqs, they go last
@@ -174,43 +214,42 @@ for a in ${n// / } ;do
         for p2 in ${p// / };do
             m=" $p2 "
             if [[ ! $effectiveactions =~ $m ]];then
-                printf "%s needs postreq %s, adding it\n" "$a" "$p2"
+                printf "inf: %s needs postreq %s, adding it\n" "$a" "$p2"
                 effectiveactions="$effectiveactions $p2 "
             else
-                printf "putting postreq '%s' last\n" "$m" 
+                printf "inf: putting postreq '%s' last\n" "$p2" 
                 effectiveactions="$(sed "s#$m##g" <<<  "$effectiveactions") $m "
             fi
         done
     fi
 done    
-# printf 'effectiveactions #1: %s\n' "$effectiveactions"
 
-# effectiveactions=$e
-# printf "prereqs #2\n"
-# for p in "${!prereqs[@]}"; do
-#     # echo "$p";
-#     m="([^ ]+) ([^ ]+)"
-#     if [[ $p =~ $m ]];then 
-#         d=${BASH_REMATCH[1]}
-#         r=${BASH_REMATCH[2]}
-#         m=" $d "
-#         m2=" $r "
-#         if [[ $effectiveactions =~ $m && ! $effectiveactions =~ $m2 ]]; then
-#             printf "%s needs %s, adding it\n" "$d" "$r"
-#             effectiveactions=" $r $effectiveactions"
-#         fi
-#     fi
-# done
-# printf 'effectiveactions #2: %s\n' "$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")"
-# echo "$effectiveactions";
+#add aptupgrade and cleanapt as mandatory
+# printf 'effectiveactions %s\n' "$effectiveactions"
+# if [[ -z "$effectiveactions" ]];then
+    # effectiveactions="$(sed -E 's# aptupgrade | cleanapt ##g'<<<"$effectiveactions")"
+    # effectiveactions=" aptupgrade $effectiveactions cleanapt "
+    # printf 'added/moved aptupgrade and cleanapt to first/last respectively.'
+# fi
 
 
-# for key in "${!inputarray[@]}"; do   echo "${key}, ${inputarray[${key}]}"; done
-help=1
+
+
+if [[ -z $effectiveactions ]];then  
+    help=1
+    [[ -v $debug ]] && printf 'debug: empty input, show help and exit\n'
+else 
+        effectiveactions="$(sed -E 's# aptupgrade | cleanapt ##g'<<<"$effectiveactions")"
+    effectiveactions=" aptupgrade $effectiveactions cleanapt "
+    printf 'added/moved aptupgrade and cleanapt to first/last respectively.\n'
+fi
+effectiveactions="$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")"
+printf "inf: effective actions: '%s'\n" "$effectiveactions"
+
+# help=1
 if [[ $help == 1 ]]; then
     #  printf "input: '%s'" "${!inputarray[@]}"
-    printf "Effective actions: %s" "$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")"
-    printf "\nUsage: %s \"<space separated list of actions or presets>\"\n\n" "$scriptname"
+    printf "\nUsage: %s <space separated list of actions or presets>\n\n" "$scriptname"
     printf "This script will install your selection of utilities in a wsl Ubuntu distro.\n"
     printf "It will also run apt update/upgrade.\n\n"
     # printf  "available actions: '$availableactionsstring'\n\n"
@@ -245,79 +284,48 @@ if [[ $help == 1 ]]; then
     printf "\n"
     if [[ $sourced == "1" ]]; then return; else exit; fi
 fi
-
-if [[ $sourced == "1" ]]; then return; else exit; fi
-
-
-inpspaces=" $(sed -E 's# +#  #g' <<<"$inp") "
-for p in ${!presets[@]}
-do
-    # echo "checking preset $p"
-    if [[ $inp == $p ]];then 
-        inp=${presets[$p]}
-        echo "input '$p', selecting '$inp'"
-    fi
+# if [[ $sourced == "1" ]]; then return; else exit; fi
+# printf 'dollar0 '%s' realpath dirname '%s' bash_source '%s' \n'  "$0" "$(realpath $(dirname "$0"))" "${BASH_SOURCE[0]}"
+# printf 'dollar0 '%s' realpath dirname '%s' bash_source '%s' \n'  "$0" "$(realpath $(dirname "${BASH_SOURCE[0]}"))" "${BASH_SOURCE[0]}"
+# echo "The absolute directory of this script is: $(realpath $(dirname "$0"))/$0"
+while [[ -z $autoexec  ]] ; do
+    read -p "Execute? " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) if [[ $sourced == "1" ]]; then return; else exit; fi;;
+        * ) echo "Please answer (y)es or (n)o.";;
+    esac
 done
-echo "actions: '$inp'"
 
+# if [[ $sourced == "1" ]]; then return; else exit; fi
+printf '\nAuthorizing sudo: '
+sudo ls >/dev/null
+printf '\n'
+# printf 'sudo apt update/upgrade\n'
+declare -A outputs=()
+allstart=$(($(date +%s%N)/1000000))
+mkdir -p logs; rm logs/*
+for a in ${effectiveactions// / };do 
+    start=$(($(date +%s%N)/1000000))
+   cd $dirname
+   printf "Executing '%s'" "$a";
+    (. ./scripts/$a.sh >logs/$a.txt 2>&1) && o="OK"||o="FAIL" 
+    end=$(($(date +%s%N)/1000000))
+    ms=$(($end-$start))
+    # printf 'failtrain %s' "$o"
+    os=$(printf '%s: ' "$o";printf %*s'' $((4 - ${#ms}));printf "%s ms" "$ms")
+    outputs["$a"]=$(printf '%s' "$os")
+    printf %*s'' $((20 - ${#a}));printf "%s\n" "$os"
+done
+allend=$(($(date +%s%N)/1000000))
+allms=$(($allend-$allstart))
+printf '\nAll done in %s ms \n\n' "$allms"
 
-
-# get available scripts from script directory
-
-# availableactionsstring = $(ls -1 scripts|sed 's#\.sh# #'|tr '\n' ' ')
-echo "'$availableactionsstring'"
-# echo "iterating inputs"
-# for i in ${inp// / }
+#  k="$(printf '%s\n' "${!outputs[@]}"|sort)"
+# for s in $k
 # do
-#     echo "$i"
+#     printf "%s:" "$s";printf %*s'' $((18 +2 - ${#s}));printf '%s\n' "${outputs[${s}]}" 
+    
 # done
 
-
-IFS="," read -ra rawdeps <<< "brew krew,brew k9s,brew kubectl,brew k3d"
-
-
-echo "rawdeps ${rawdeps[*]}"
-# add single spaces before and after actions to simplify matching
-sorting=" $(sed -E 's# +#  #g' <<<"$inp") "
-
-# adding prereqs if they are missing
-for r in "${rawdeps[@]}"
-do
-    IFS=" " read -ra rp <<< $r
-    # printf "checking dep $r\n"
-    if [[ $sorting =~ " ${rp[1]} " && ! $sorting =~ " ${rp[0]} " ]]; then 
-        echo "${rp[1]} needs ${rp[0]}, adding it"
-        sorting="$sorting  ${rp[0]}"
-    fi
-done
-
-# sort actions so that prerews (ie brew) are installed before dependant action (ie k3d)
-unsorted=$sorting
-echo "sort start: '$sorting'"
-sortedactions=""
-while [[ $sorting != $sortedactions ]]
-do
-    sortedactions=$sorting
-    for r in "${rawdeps[@]}"
-    do
-        echo "dep: $r"
-        IFS=" " read -ra rp <<< $r
-        echo "dep 0: ${rp[0]} 1: ${rp[1]}"
-        echo "sorting:  $sorting"
-        sorting=$(sed -E "s#( ${rp[1]} )( .+ ){0,1}( ${rp[0]} )#\3\2\1#g" <<<$sorting)
-        echo "sorted:   $sorting"
-    done
-done
-
-echo "unsorted: '$unsorted'"
-echo "sorted:   '$sortedactions'"
-# remove superfluous spaces
-sortedactions=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<$sortedactions)
-echo "sorted_ns:'$sortedactions'"
-# if [[ $inp == "all" ]];then
-#     inp=$(echo $availableactionsstring |sed 's/noaptupdate\|nonukesnap//g' )
-#     # echo "all -> $inp"
-# fi
-# inp=$(echo $inp |sed 's/ +/ /g' )
-# printf "Running the following:\n$inp\nenter to accept"
-# read
+. ~/.bashrc

@@ -1,2 +1,2 @@
-openshift:winconfig k9s az oc kubectl krew tsh k3d jq brew yq
-openshifttf: winconfig terraform k9s az oc kubectl krew docker tsh k3d jq brew
+openshift: winsettings config k9s az oc kubectl krew tsh k3d jq brew yq
+openshifttf: winsettings config terraform k9s az oc kubectl krew docker tsh k3d jq brew

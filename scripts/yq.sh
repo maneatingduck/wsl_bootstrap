@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-# desc: install k9s, a terminal kubernetes/openshift gui.
+# desc: installs yq (yaml processor, similar to jq)
+# Prereq: brew
 export HOMEBREW_NO_AUTO_UPDATE=1
-brew install k9s
+brew install yq
 # brew bundle dump --global --force

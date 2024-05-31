@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# installs latest dotnet
+# desc: installs latest dotnet
 echo dotnet the ubuntu way
 sudo apt remove 'dotnet*' 'aspnet*' 'netstandard*'
 

@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# desc: installs terraform 
+# desc: installs vault 
 # prereq: hashicorprepo
 # postreq: aptclean
-sudo apt install terraform
+sudo apt install vault

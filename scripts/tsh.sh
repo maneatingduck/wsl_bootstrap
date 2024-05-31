@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
-# install tsh
-pushd .
-cd ~mkdi
+# desc: install teleport tsh
+cd ~
 mkdir -p bin
 # find latest version for Linux 64-bit at https://goteleport.com/download/#install-links
 export TELEPORT_FILE=teleport-v13.4.21-linux-amd64-bin.tar.gz
@@ -10,4 +9,3 @@ curl https://cdn.teleport.dev/$TELEPORT_FILE | tar --occurrence=1 -xvzf - telepo
 mv teleport/tsh ~/bin
 chmod 755 ~/bin/tsh
 rm -rfv teleport
-popd

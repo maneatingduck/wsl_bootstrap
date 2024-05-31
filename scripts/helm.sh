@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-# desc: install k9s, a terminal kubernetes/openshift gui.
+# desc: install helm
+# prereq: brew
 export HOMEBREW_NO_AUTO_UPDATE=1
-brew install k9s
+brew install helm
 # brew bundle dump --global --force

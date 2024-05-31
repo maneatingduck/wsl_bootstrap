@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
-# installs latest dotnet
+# desc: installs latest dotnet
 echo dotnet the ubuntu way
-sudo apt remove 'dotnet*' 'aspnet*' 'netstandard*'
+sudo apt remove 'dotnet*' 'aspnet*' 'netstandard*' -y
 
 sudo cat << \EOF >> /etc/apt/preferences
 Package: dotnet* aspnet* netstandard*

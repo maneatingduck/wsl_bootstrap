@@ -194,7 +194,7 @@ else
 fi
 
 effectiveactions="$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")"
-[[ -v $help ]] && printf "inf: effective actions: '%s'\n" "$effectiveactions"
+[[ -n $help && -z $effectiveactions ]] && printf "inf: effective actions: '%s'\n" "$effectiveactions"
 
 if [[ $help == 1 ]]; then
 

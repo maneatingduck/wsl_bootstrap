@@ -1,9 +1,10 @@
 #!/usr/bin/bash
 # desc: minio s3 storage command line tool
+sudo mkdir -p ~/bin
 sudo curl https://dl.min.io/client/mc/release/linux-amd64/mc \
   --create-dirs \
-  -o /usr/local/bin/mc
-  # -o $HOME/minio-binaries/mc
+   -o ~/bin/mc
 
-# chmod +x $HOME/minio-binaries/mc
-# export PATH=$PATH:$HOME/minio-binaries/
+sudo chmod a+x ~/bin/mc
+# export PATH=$PATH:~/bin
+# echo 'export PATH=$PATH:$HOME/minio-binaries/' >  ~/.bashrc

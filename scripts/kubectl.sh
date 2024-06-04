@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 # desc: installs kubectl
 # prereq: brew
-brew install kubernetes-cli
+brew install kubectl
 # brew bundle dump --global --force
-kubectl completion bash >~/.kubectl_completion
+kubectl completion bash > ~/.kubectl_completion
 
 cat << \EOF >> ~/.bashrc
 if [ -f ~/.kubectl_completion ]; then

@@ -11,6 +11,7 @@ sudo apt-get install build-essential -y
 
 (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.bashrc
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+. ~/.bashrc
 # brew install chezmoi
 # chezmoi init git@gitlab.intility.com:aa303/dotfiles.git
 export HOMEBREW_NO_AUTO_UPDATE=1

@@ -117,20 +117,24 @@ do
     fi
 done
 [[ -v $debug ]] && printf 'debug: checking actions for prereqs\n'
-n=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")
-for a in ${n// / } ;do
-    if [[ ${prereqstrings[$a]+"a"} == "a"  ]];then 
-        p=${prereqstrings["$a"]}
-        for p2 in ${p// / };do
-            m=" $p2 "
-            if [[ ! $effectiveactions =~ $m ]];then
-                printf "inf: %s needs prereq %s, adding it\n" "$a" "$p2"
-                effectiveactions=" $p2 $effectiveactions"
-            fi
-        done
-    fi
+e=""
+while [[ $e != "$effectiveactions" ]]
+do
+    e=$effectiveactions
+    n=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")
+    for a in ${n// / } ;do
+        if [[ ${prereqstrings[$a]+"a"} == "a"  ]];then 
+            p=${prereqstrings["$a"]}
+            for p2 in ${p// / };do
+                m=" $p2 "
+                if [[ ! $effectiveactions =~ $m ]];then
+                    printf "inf: %s needs prereq %s, adding it\n" "$a" "$p2"
+                    effectiveactions=" $p2 $effectiveactions"
+                fi
+            done
+        fi
+    done
 done
-
 # sort actions so that prereqs are installed before postreqs
 [[ -v $debug ]] && printf 'debug: sorting actions so that prereqs come first\n'
 sorting=$effectiveactions
@@ -209,7 +213,7 @@ if [[ $help == 1 ]]; then
     printf "Special input actions:\n"
     printf "help/--help or no input: show usage. If help is mixed with input it will display processing information\n"
     printf "autoexec: execute without confirmation\n"
-    printf "debug: execute without asking\n"
+    printf "debug: print debug information\n"
     printf "noapt: don't add aptupgrade automatically. aptclean will still be run\n"
     
     printf "\nAvailable presets:\n\n"
@@ -252,13 +256,14 @@ printf '\n'
 declare -A outputs=() 
 allstart=$(($(date +%s%N)/1000000))
 mkdir -p logs; 
+find logs ! -name 'currentaction.txt' -type f -exec rm -f {} +
 for a in ${effectiveactions// / };do 
     echo -n ''>logs/$a.txt
-    echo -n ''>logs/allactions.txt
+    echo -n ''>logs/currentaction.txt
     start=$(($(date +%s%N)/1000000))
    cd $dirname
    printf "Executing '%s'" "$a";
-    (. ./scripts/$a.sh 2>&1|tee logs/$a.txt >> logs/allactions.txt) && o="OK"||o="FAIL" 
+    (. ./scripts/$a.sh 2>&1|tee logs/$a.txt >> logs/currentaction.txt) && o="OK"||o="FAIL" 
     end=$(($(date +%s%N)/1000000))
     ms=$(($end-$start))
     # printf 'failtrain %s' "$o"
@@ -269,7 +274,7 @@ done
 allend=$(($(date +%s%N)/1000000))
 allms=$(($allend-$allstart))
 printf '\nAll done in %s ms \n\n' "$allms"
-
+printf 'done\n' > logs/currentaction.txt
 
 . ~/.bashrc
 . ~/.profile

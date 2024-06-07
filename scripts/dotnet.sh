@@ -33,5 +33,5 @@ cat << \EOF >> ~/.bashrc
 # Add .NET Core SDK tools
 export PATH="$PATH:/home/$(whoami)/.dotnet/tools"
 EOF
-. ~/.bashrc
+
 

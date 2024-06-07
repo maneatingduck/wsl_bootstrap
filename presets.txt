@@ -1,3 +1,4 @@
-openshift: winsettings config k9s az oc kubectl krew tsh k3d jq brew yq
-openshifttf: winsettings config terraform k9s az oc kubectl krew docker tsh k3d jq brew
-local_kubernetes: k3d jq config winsettings kubectl mc nukesnap oc vscodeserver yq k9s krew 
+openshift: winconfig config k9s az oc kubectl krew tsh k3d jq brew yq
+openshifttf: winconfig config terraform k9s az oc kubectl krew docker tsh k3d jq brew
+local_kubernetes: k3d jq config winconfig kubectl mc nukesnap oc vscodeserver yq k9s krew 
+local_aa303:winconfig config k9s kubectl k3d jq yq cnpg winsshkeys nukesnap mc helm dotnet

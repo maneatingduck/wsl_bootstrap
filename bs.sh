@@ -47,14 +47,14 @@ declare -A presets=()
 while IFS= read -r line || [ -n "$line" ]; do
     line=$(sed 's#[\r\n]##' <<<$line) 
     m="^([^ ]+) *: *(.*)$"
-    if [[ ! $line =~ $m ]];then echo "warning: preset.txt: invalid line '$line'";continue;fi
+    if [[ ! $line =~ $m ]];then echo "WARNING>: preset.txt: invalid line '$line'";continue;fi
     preset=${BASH_REMATCH[1]}
     actions=${BASH_REMATCH[2]}
     acts=""
     for a in ${actions// / };do
         if [[ ! ${availableactions[$a]+"a"} == "a" ]]; 
         then 
-            printf "warning: preset.txt: '%s': action '%s' not in available actions\n" "$preset" "$a"
+            printf "ERROR: preset.txt: '%s': action '%s' not in available actions, please edit presets.txt\n" "$preset" "$a"
             help=1
         else
             acts="$acts $a"
@@ -87,7 +87,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     line=${line//$'\r'/}
     line=${line//$'\n'/}
     m="scripts/([^\.]+)\.[^:]+:[# ]*([^ #]+): *(.*) *$"
-    if [[ ! $line =~ $m ]]; then printf "warning: documentation line '%s' does not match '$m'" "$line";fi
+    if [[ ! $line =~ $m ]]; then printf "WARNING: documentation line '%s' does not match '$m'" "$line";fi
     a=${BASH_REMATCH[1]}
     t=${BASH_REMATCH[2]}
     v=${BASH_REMATCH[3]}
@@ -107,15 +107,26 @@ for key in "${!postreqstrings[@]}"; do   postreqstrings[$key]=$(sed -E 's#\s+# #
 
 
 effectiveactions=""
-for s in ${inp// / }
-do
-    if [[ ${presets[$s]+"a"} == "a" ]];then 
-        printf "inf: preset requested, merging with input actions: '%s': '%s'\n" "$s" "${presets[$s]}"
-        for a in ${presets[$s]// / } ;do effectiveactions="$effectiveactions $a ";done
-    else
-        effectiveactions="$effectiveactions $s "
-    fi
-done
+e="bah"
+p=""
+# while [[ $e != "$effectiveactions" ]];do
+    for s in ${inp// / }
+    do
+        if [[ ${presets[$s]+"a"} == "a" ]];then 
+            printf "inf: preset requested, merging with input actions: '%s': '%s'\n" "$s" "${presets[$s]}"
+            for a in ${presets[$s]// / } ;do effectiveactions="$effectiveactions $a ";done
+            p="$p $s "
+        else
+            if [[ ! ${availableactions[$s]+"a"} == "a" ]]; 
+            then 
+                printf "ERROR: action '%s' not in available actions\n" "$s"
+                help=1
+            else
+                effectiveactions="$effectiveactions $s "
+            fi
+        fi
+    done
+# done
 [[ -v $debug ]] && printf 'debug: checking actions for prereqs\n'
 e=""
 while [[ $e != "$effectiveactions" ]]
@@ -270,6 +281,7 @@ for a in ${effectiveactions// / };do
     os=$(printf '%s: ' "$o";printf %*s'' $((8 - ${#ms}));printf "%s ms" "$ms")
     outputs["$a"]=$(printf '%s' "$os")
     printf %*s'' $((20 - ${#a}));printf "%s\n" "$os"
+    . ~/.bashrc
 done
 allend=$(($(date +%s%N)/1000000))
 allms=$(($allend-$allstart))

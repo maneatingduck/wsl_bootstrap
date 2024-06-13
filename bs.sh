@@ -68,15 +68,6 @@ done < presets.txt
 # add/replace "all" in presets
 presets+=([all]=$availableactionsstring)
 
-# remove winsshkeys from presets
-for key in "${!presets[@]}"; do   
-    m=" *winsshkeys( *)"
-    a="${presets["$key"]}"
-    if [[ $a =~ $m  ]];then
-        presets["$key"]=$(sed -E "s#$m#\1#g;"<<<"${presets["$key"]}")
-        [[ -v $debug ]] && printf "debug: removing winsshkeys from preset '%s', it must be included explicitly\n" "$key"
-    fi
-done
 
 #gather config information from script comments
 prereqs=()

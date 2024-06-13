@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 # desc: minio s3 storage command line tool
-sudo mkdir -p ~/bin
+mkdir -p ~/bin
 sudo curl https://dl.min.io/client/mc/release/linux-amd64/mc \
   --create-dirs \
    -o ~/bin/mc

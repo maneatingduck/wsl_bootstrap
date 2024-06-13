@@ -9,4 +9,4 @@ if(wsl -l |Where {$_.Replace("`0","") -match '^test2'}) {write-host haha no it e
 $d=mkdir -f ..\vhdx\$distroname
 # rm -Recurse $d\*
 wsl --import $distroname ..\vhdx\$distroname ..\wsltar\$templatetar
-wsl -d $distroname
+wsl -d $distroname 

@@ -45,6 +45,8 @@ done
 # read presets
 declare -A presets=()
 while IFS= read -r line || [ -n "$line" ]; do
+    m="^[^:]+#"
+    if [[ ! $line =~ $m ]]; then continue; fi
     line=$(sed 's#[\r\n]##' <<<$line) 
     m="^([^ ]+) *: *(.*)$"
     if [[ ! $line =~ $m ]];then echo "WARNING>: preset.txt: invalid line '$line'";continue;fi

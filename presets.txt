@@ -4,3 +4,5 @@ local_kubernetes: k3d jq config winconfig kubectl mc nukesnap oc vscodeserver yq
 local_aa303:winconfig config k9s kubectl k3d jq yq cnpg nukesnap mc helm dotnet
 omega:winconfig config k9s oc kubectl jq yq nukesnap mc tsh14 vscodeserver
 sigma:winconfig config k9s oc kubectl jq yq nukesnap mc az tsh terraform vault 
+#test1: yq
+#test2: test1 jq haha

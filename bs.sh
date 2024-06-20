@@ -12,6 +12,7 @@ help=''
 noapt=''
 if [[ $inp == "" ]]; then help=1;fi
 
+# process special options
 inpspaces=" $(sed -E 's# +#  #g' <<<"$inp") "
 m=" help | --help "
 if [[ $inpspaces =~ $m ]]; then help=1;printf 'inf: help requested\n'; fi
@@ -19,7 +20,7 @@ if [[ $inpspaces =~ $m ]]; then help=1;printf 'inf: help requested\n'; fi
 m=' debug '
 if [[ $inpspaces =~ $m ]]; then debug=1;printf 'debug: debug enabled\n'; fi
 
-m=" noapt "
+m=" noapt "0
 if [[ $inpspaces =~ $m ]]; then noapt=1;printf 'debug: noapt -- don''t add aptupgrade automatically\n'; fi
 
 m=" autoexec "
@@ -45,8 +46,8 @@ done
 # read presets
 declare -A presets=()
 while IFS= read -r line || [ -n "$line" ]; do
-    m="^[^:]+#"
-    if [[ ! $line =~ $m ]]; then continue; fi
+    m="^[^:]*#"
+    if [[ $line =~ $m ]]; then continue; fi
     line=$(sed 's#[\r\n]##' <<<$line) 
     m="^([^ ]+) *: *(.*)$"
     if [[ ! $line =~ $m ]];then echo "WARNING>: preset.txt: invalid line '$line'";continue;fi
@@ -54,13 +55,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     actions=${BASH_REMATCH[2]}
     acts=""
     for a in ${actions// / };do
-        if [[ ! ${availableactions[$a]+"a"} == "a" ]]; 
-        then 
-            printf "ERROR: preset.txt: '%s': action '%s' not in available actions, please edit presets.txt\n" "$preset" "$a"
-            help=1
-        else
             acts="$acts $a"
-        fi
     done
     acts=$(sed 's#^ ##' <<<"$acts")
     presets+=([$preset]=$(sed 's#^ ##' <<<"$acts"))
@@ -69,6 +64,18 @@ done < presets.txt
 
 # add/replace "all" in presets
 presets+=([all]=$availableactionsstring)
+
+# validate preset actions against available actions and other presets
+for p in "${!presets[@]}"; do   
+    actions="${presets["$p"]}"
+    for a in ${actions// / };do
+        if [[ ${availableactions[$a]+"a"} != "a" && ${presets[$a]+"a"} != "a"  ]]; 
+        then 
+            printf "ERROR: preset.txt: '%s': action '%s' not in available actions or presets, please edit presets.txt\n" "$preset" "$a"
+            help=1
+        fi
+  done    
+done
 
 
 #gather config information from script comments
@@ -99,27 +106,45 @@ for key in "${!postreqstrings[@]}"; do   postreqstrings[$key]=$(sed -E 's#\s+# #
 [[ -v $debug ]] && for key in "${!postreqstrings[@]}";do printf 'debug: postreqs: '%s' needs '%s'\n' "$key" "${postreqstrings["$key"]}";done
 
 
+# validate input against available actions and presets
 effectiveactions=""
+for s in ${inp// / }
+  do
+    if [[ ${availableactions[$s]+"a"} != "a" && ${presets[$s]+"a"} != "a" ]]; then
+      help=1
+      printf "ERROR: action '%s' not in available actions or presets\n" "$s"
+      continue
+    else
+      m=" $s "
+      if [[ ! $effectiveactions =~ $m ]];then 
+        effectiveactions="$effectiveactions $s "
+        [[ -v $debug ]] && printf 'debug: added action or preset %s\n' "$s"
+      fi
+    fi
+done
+
+
+# add actions from presets requested in inputs. Loop until equal, as presets can be nested
 e="bah"
-p=""
-# while [[ $e != "$effectiveactions" ]];do
-    for s in ${inp// / }
+while [[ $e != "$effectiveactions" ]];do
+  e=$effectiveactions
+  for s in ${effectiveactions// / }
     do
         if [[ ${presets[$s]+"a"} == "a" ]];then 
             printf "inf: preset requested, merging with input actions: '%s': '%s'\n" "$s" "${presets[$s]}"
-            for a in ${presets[$s]// / } ;do effectiveactions="$effectiveactions $a ";done
-            p="$p $s "
-        else
-            if [[ ! ${availableactions[$s]+"a"} == "a" ]]; 
-            then 
-                printf "ERROR: action '%s' not in available actions\n" "$s"
-                help=1
-            else
-                effectiveactions="$effectiveactions $s "
-            fi
+            for a in ${presets[$s]// / } ;do 
+                m=" $a "
+                if [[ ! $effectiveactions =~ $m ]]; then
+                    effectiveactions="$effectiveactions $a ";
+                    m=" $s "
+                    effectiveactions="${effectiveactions//$m/}"
+                fi
+            done
         fi
     done
-# done
+done
+
+# add prereqs if necessary
 [[ -v $debug ]] && printf 'debug: checking actions for prereqs\n'
 e=""
 while [[ $e != "$effectiveactions" ]]
@@ -139,7 +164,7 @@ do
         fi
     done
 done
-# sort actions so that prereqs are installed before postreqs
+# sort actions so that prereq scripts are run before dependent scripts
 [[ -v $debug ]] && printf 'debug: sorting actions so that prereqs come first\n'
 sorting=$effectiveactions
 sortedactions=""
@@ -185,7 +210,6 @@ done
         help=1
         [[ -v $debug ]] && printf 'debug: empty input, show help and exit\n'
 
-    # elif [[ -z $help ]];then
     else
         # we always want to clean apt cache last
 
@@ -270,7 +294,6 @@ for a in ${effectiveactions// / };do
     (. ./scripts/$a.sh 2>&1|tee logs/$a.txt >> logs/currentaction.txt) && o="OK"||o="FAIL" 
     end=$(($(date +%s%N)/1000000))
     ms=$(($end-$start))
-    # printf 'failtrain %s' "$o"
     os=$(printf '%s: ' "$o";printf %*s'' $((8 - ${#ms}));printf "%s ms" "$ms")
     outputs["$a"]=$(printf '%s' "$os")
     printf %*s'' $((20 - ${#a}));printf "%s\n" "$os"

@@ -6,6 +6,6 @@ mkdir -p bin
 export TELEPORT_FILE=teleport-v13.4.21-linux-amd64-bin.tar.gz
 curl https://cdn.teleport.dev/$TELEPORT_FILE | tar --occurrence=1 -xvzf - teleport/tsh
 # tar -xcvf $TELEPORT_FILE teleport/tsh
-mv teleport/tsh ~/bin
-chmod 755 ~/bin/tsh
+mv teleport/tsh ~/bin/tsh13
+chmod 755 ~/bin/tsh13
 rm -rfv teleport

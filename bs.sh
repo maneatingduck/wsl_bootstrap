@@ -23,10 +23,10 @@ if [[ $inpspaces =~ $m ]]; then debug=1;printf 'debug: debug enabled\n'; fi
 m=" noapt "0
 if [[ $inpspaces =~ $m ]]; then noapt=1;printf 'debug: noapt -- don''t add aptupgrade automatically\n'; fi
 
-m=" autoexec "
+m=" y "
 if [[ $inpspaces =~ $m ]]; then autoexec=1;printf 'inf: autoexec enabled\n';fi
 
-m=' autoexec | debug | noapt '
+m=' y | debug | noapt '
 inpspaces=$(sed -E "s#$m##g"<<<"$inpspaces")
 inpspaces=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$inpspaces")
 inp=$inpspaces
@@ -240,7 +240,7 @@ if [[ $help == 1 ]]; then
     printf "It will also run apt update/upgrade.\n\n"
     printf "Special input actions:\n"
     printf "help/--help or no input: show usage. If help is mixed with input it will display processing information\n"
-    printf "autoexec: execute without confirmation\n"
+    printf "y: execute without confirmation\n"
     printf "debug: print debug information\n"
     printf "noapt: don't add aptupgrade automatically. aptclean will still be run\n"
     
@@ -284,25 +284,28 @@ printf '\n'
 declare -A outputs=() 
 allstart=$(($(date +%s%N)/1000000))
 mkdir -p logs; 
-find logs ! -name 'currentaction.txt' -type f -exec rm -f {} +
+find logs ! -name 'currentaction.log' -type f -exec rm -f {} +
 for a in ${effectiveactions// / };do 
-    echo -n ''>logs/$a.txt
-    echo -n ''>logs/currentaction.txt
+    # echo -n ''>logs/$a.txt
+    printf "Executing '%s'" "$a">logs/currentaction.log
     start=$(($(date +%s%N)/1000000))
    cd $dirname
    printf "Executing '%s'" "$a";
-    (. ./scripts/$a.sh 2>&1|tee logs/$a.txt >> logs/currentaction.txt) && o="OK"||o="FAIL" 
+    # ( ./scripts/$a.sh 2>&1|tee logs/$a.txt >> logs/currentaction.txt)
+    ( ./scripts/$a.sh >>logs/currentaction.log) 2>&1 | tee -a logs/currentaction.log >> logs/stderr_$a.log
+    cp logs/currentaction.log logs/$a.log
+    if [ ! -s logs/stderr_$a.log ]; then rm -f logs/stderr_$a.log; fi
     end=$(($(date +%s%N)/1000000))
     ms=$(($end-$start))
-    os=$(printf '%s: ' "$o";printf %*s'' $((8 - ${#ms}));printf "%s ms" "$ms")
-    outputs["$a"]=$(printf '%s' "$os")
+    os=$(printf %*s'' $((8 - ${#ms}));printf "%s ms" "$ms")
+    # outputs["$a"]=$(printf '%s' "$os")
     printf %*s'' $((20 - ${#a}));printf "%s\n" "$os"
     . ~/.bashrc
 done
 allend=$(($(date +%s%N)/1000000))
 allms=$(($allend-$allstart))
-printf '\nAll done in %s ms \n\n' "$allms"
-printf 'done\n' > logs/currentaction.txt
+printf '\nAll done in %s ms \n\n' "$allms"|tee logs/currentaction.log
+# printf 'done\n' > logs/currentaction.log
 
 . ~/.bashrc
 . ~/.profile

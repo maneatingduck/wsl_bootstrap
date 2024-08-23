@@ -1,3 +1,3 @@
 kubernetes_management: brew k9s az oc kubectl krew jq yq cnpg kubelogin
 kubernetes: kubernetes_management k3d kind tilt ctlptl
-omega: config kubernetes_management nukesnap config terraform vault tsh
+omega: kubernetes_management nukesnap config terraform vault tsh

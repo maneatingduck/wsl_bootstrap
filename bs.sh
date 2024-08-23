@@ -10,6 +10,7 @@ debug=''
 autoexec=''
 help=''
 noapt=''
+noconfig=''
 if [[ $inp == "" ]]; then help=1;fi
 
 # process special options
@@ -20,13 +21,16 @@ if [[ $inpspaces =~ $m ]]; then help=1;printf 'inf: help requested\n'; fi
 m=' debug '
 if [[ $inpspaces =~ $m ]]; then debug=1;printf 'debug: debug enabled\n'; fi
 
-m=" noapt "0
-if [[ $inpspaces =~ $m ]]; then noapt=1;printf 'debug: noapt -- don''t add aptupgrade automatically\n'; fi
+m=" noapt "
+if [[ $inpspaces =~ $m ]]; then noapt=1;printf "inf: 'noapt' supplied, don't add aptupgrade\n" ; fi
+
+m=" noconfig "
+if [[ $inpspaces =~ $m ]]; then noconfig=1;printf "inf: 'noconfig' supplied, don't add config\n"; fi
 
 m=" y "
 if [[ $inpspaces =~ $m ]]; then autoexec=1;printf 'inf: autoexec enabled\n';fi
 
-m=' y | debug | noapt '
+m=' y | debug | noapt | noconfig '
 inpspaces=$(sed -E "s#$m##g"<<<"$inpspaces")
 inpspaces=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$inpspaces")
 inp=$inpspaces
@@ -217,15 +221,26 @@ done
         mc=" aptclean "
         effectiveactions="$(sed -E "s#$mc##g"<<<"$effectiveactions")"
         effectiveactions="${effectiveactions}${mc}"
+        [[ -v $help ]] && printf 'inf: added %saptclean\n' "$aptu"
         
         # ...and will put aptupgrade first, but won't add aptupgrade if explicitly requested not to
-        ma=" aptupgrade "
         effectiveactions="$(sed -E "s#$ma##g"<<<"$effectiveactions")"
         if [[ -z $noapt ]];then
+            ma=" aptupgrade "
             aptu="aptupgrade, "
             effectiveactions="${ma}${effectiveactions}"
+            printf "inf: added aptupgrade, use 'noapt' to disable\n" 
+
+        # else 
+        #     printf "inf: 'noapt' supplied don't add aptupgrade\n" 
         fi
-        [[ -v $help ]] && printf 'inf: added %saptclean\n' "$aptu"
+        if [[ -z $noconfig ]];then
+            ma=" config "
+            effectiveactions="${ma}${effectiveactions}"
+            printf "inf: added config, use 'noconfig' to disable\n" 
+        # else 
+        #     printf "inf: 'noconfig' supplied, don't add config\n" 
+        fi
       
     fi
 
@@ -243,6 +258,7 @@ if [[ $help == 1 ]]; then
     printf "y: execute without confirmation\n"
     printf "debug: print debug information\n"
     printf "noapt: don't add aptupgrade automatically. aptclean will still be run\n"
+    printf "noconfig: don't add linux/shell config automatically. \n"
     
     printf "\nAvailable presets:\n\n"
     l="$(printf '%s\n' "${!presets[@]}"|wc -L)"

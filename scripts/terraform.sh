@@ -2,4 +2,4 @@
 # desc: installs terraform 
 # prereq: hashicorprepo
 # postreq: aptclean
-sudo apt install terraform
+sudo apt-get install terraform

@@ -4,7 +4,7 @@ echo "Removing snap..."
 # Stop the daemon
 sudo systemctl disable --now snapd
 # Uninstall
-sudo apt purge -y snapd
+sudo apt-get purge -y snapd
 # Tidy up dirs
 sudo rm -rf /snap /var/snap /var/lib/snapd /var/cache/snapd /usr/lib/snapd ~/snap
 # Stop it from being reinstalled by 'mistake' when installing other packages

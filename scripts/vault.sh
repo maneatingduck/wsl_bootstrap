@@ -2,4 +2,4 @@
 # desc: installs vault 
 # prereq: hashicorprepo
 # postreq: aptclean
-sudo apt install vault
+sudo apt-get install vault

@@ -97,9 +97,9 @@ NOTE: the prepending dot is necessary to "source" the script, so that for instan
 ```
 . bs.sh
 ```
-Example: Install the preset omega, add dotnet, and execute automatically:
+Example: Install the preset omega, add docker, and execute automatically:
 ```
-./bs.sh y omega dotnet
+. bs.sh y omega docker
 ```
 
 
@@ -115,11 +115,11 @@ wsl --import -d aa ..\wsl\vhdx\aa ..\wsl\tar\template.tar
 # launch the new distro
 wsl -d aa
 ```
-You should find yourself within the new distro in the wsl_bootstrap directory, now we're ready to install configurations and some tools with the bs.sh script. Let's install the "local_kubernetes" preset.
+You should find yourself within the new distro in the wsl_bootstrap directory, now we're ready to install configurations and some tools with the bs.sh script. Let's install the "kubernetes" preset.
 
 ```
 # di@AA-IMC-9709427:/mnt/c/Users/aa303/wsl/wsl_bootstrap$ 
-. bs.sh y local_kubernetes
+. bs.sh y kubernetes
 ```
 ## Creating a deployable image for omega
 
@@ -140,18 +140,27 @@ You should find yourself within the new distro in the wsl_bootstrap directory, n
 
 ## host links and mounts
 
-After copying and importing the image in a vm/machine I usually create some convenient shortcuts in my wsl home directory, I'll just leave the commands here
+After copying and importing the image in a vm/machine I usually create some convenient shortcuts in my wsl home directory, I'll just leave the commands here. 
+PS ssh-keys bør opprettes og legges i host-os på VM, og kun kopieres til 
 
 ```
+# set windows username for copying files from windows home directory
 winusername=aa303
+
 # create symbolic link to windows home dir, ie. aa303
 ln -sf /mnt/c/Users/$winusername ~/$winusername
 
 # copy ssh keys from windows for ie. gitlab
-mkdir -p ~/.ssh && cp $winusername/.ssh/id_rsa* ~/.ssh
+mkdir -p ~/.ssh 
+cp /mnt/c/Users/$winusername/.ssh/* ~/.ssh
+chmod -R 700 ~/.ssh
 
-# mount network drives in your home directory, for instance y:
-mkdir -p ~/y && echo "y: /home/di/y drvfs defaults 0 0"|sudo tee -a /etc/fstab
+# permanently mount network drives in your home directory, for instance y:
+mkdir -p ~/y 
+echo "y: /home/di/y drvfs defaults 0 0"|sudo tee -a /etc/fstab
 sudo mount -a
+
+# copy git config
+cp /mnt/c/Users/$winusername/.gitconfig ~/.gitconfig
 ```
 

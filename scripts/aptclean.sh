@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 # desc: removes cache from apt
 # psrereq: aptupgrade
-sudo apt autoremove -y
-sudo apt clean -y
+sudo apt-get autoremove -y
+sudo apt-get clean -y

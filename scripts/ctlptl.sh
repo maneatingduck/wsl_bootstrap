@@ -2,5 +2,5 @@
 # desc: installs ctlptl
 # prereq: brew
 
-kubectl krew install tilt-dev/tap/ctlptl
+brew install tilt-dev/tap/ctlptl
 # brew bundle dump --global --force

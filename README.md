@@ -17,14 +17,13 @@ firewall=true
 ```
 
 # wsl commands and files
-You'll need a directory structure and some commands for manipulating distros and tar files in powershell. Here's my suggested structure:
+You'll need a directory structure and some commands for manipulating distros and tar files in powershell. Here's my suggested structure, which this guide will assume:
  ```
 C:\Users\aa303\wsl
                 ├── tar
                 ├── vhdx (hard drive files for each distro)
                 │   ├── aa
-                │   ├── o_ops
-                │   ├── s_ops
+                │   ├── ops
                 │   └── template
                 └── wsl_bootstrap (this repo)
                     ├── logs
@@ -42,11 +41,11 @@ wsl -d aa
 wsl --unregister -d template
 
 # export a wsl distro to a tar file for copying to another machine
-wsl --export -d o_ops ~/wsl/tar/o_ops.tar
+wsl --export -d ops ../tar/ops.tar
 
 # make a directory for the .vhdx file and import a distro
-mkdir -p ~\wsl\vhdx\o_ops 
-wsl --import -d o_ops ~\wsl\vhdx\o_ops ~\wsl\tar\o_ops.tar
+mkdir -p ..\vhdx\ops 
+wsl --import -d ops ..\vhdx\ops ..\tar\ops.tar
 
 ```
 
@@ -63,24 +62,16 @@ wsl --install
 ```
 You'll end up in the user's home directory in the new distro. Exit with the command "exit"
 
-## prepare a base image
-Start your wsl again to enter it with wsl_bootstrap as the current directory.  
+## Prepare a base image
+Start your wsl again to enter it with wsl_bootstrap as the current directory. If you're root, su to your chosen username  (for instance su - di) and navigate to the wsl_bootstrap directory.
 
-Run the following to give yourself passwordless sudo and set your user (di) as the default wsl user. When doing this you need to enter the user di's password for sudo:
+We'll use this template image as a base for subsequent distros. Upgrade the template image with aptupgrade (and nukesnap) to save some diskspace and reduce time to create other distros. This will also give yourself passwordless sudo and set your user (di) as the default wsl user.
 
-```
-# Make sure your user is the default wsl user, as an imported image won't have the correct registry key set. 
-printf '\n[user]\ndefault=%s\n' $USER | sudo tee -a /etc/wsl.conf 
-
-# Also add your user to sudoers with no password
-printf '\n%s ALL=(ALL) NOPASSWD: ALL\n' $USER | sudo tee -a /etc/sudoers 
-```
-
-We'll use this template image as a base for subsequent distros. You can upgrade the template image with aptupgrade (and nukesnap) to save some diskspace and reduce time to create other distros:
 ```
 # di@AA-IMC-9709427:/mnt/c/Users/aa303/wsl/wsl_bootstrap$
 . bs.sh y aptupgrade nukesnap config
 ```
+
 Now we'll store this image as a template, which we'll use to create other images. We'll also remove the ubuntu image to save on disk space.
 Exit wsl with the command "exit", make a backup tar file:
 
@@ -138,7 +129,7 @@ You should find yourself within the new distro in the wsl_bootstrap directory, n
 . bs.sh y omega
 ```
 
-## host links and mounts
+## host links, mounts and config
 
 After copying and importing the image in a vm/machine I usually create some convenient shortcuts in my wsl home directory, I'll just leave the commands here. 
 PS ssh-keys bør opprettes og legges i host-os på VM, og kun kopieres til 
@@ -155,12 +146,13 @@ mkdir -p ~/.ssh
 cp /mnt/c/Users/$winusername/.ssh/* ~/.ssh
 chmod -R 700 ~/.ssh
 
-# permanently mount network drives in your home directory, for instance y:
-mkdir -p ~/y 
-echo "y: /home/di/y drvfs defaults 0 0"|sudo tee -a /etc/fstab
-sudo mount -a
-
 # copy git config
 cp /mnt/c/Users/$winusername/.gitconfig ~/.gitconfig
+
+# permanently mount network drives in your home directory, for instance y:
+mkdir -p ~/y 
+echo "y: /home/$USER/y drvfs defaults 0 0"|sudo tee -a /etc/fstab
+sudo mount -a
+
 ```
 

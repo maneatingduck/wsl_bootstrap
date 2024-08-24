@@ -10,5 +10,6 @@ if(wsl -l |Where {$_.Replace("`0","") -match '^test2'}) {write-host haha no it e
 # if(Test-Path ..\vhdx\$distroname ){Write-Host ..\vhdx\$distroname already exists, exiting ;exit}
 $d=mkdir -f ..\vhdx\$distroname
 # rm -Recurse $d\*
-wsl --import $distroname ..\vhdx\$distroname ..\wsltar\$templatetar
+echo "wsl --import $distroname ..\vhdx\$distroname ..\wsl\$templatetar"
+wsl --import $distroname ..\vhdx\$distroname ..\tar\$templatetar
 wsl -d $distroname 

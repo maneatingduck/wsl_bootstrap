@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
-# desc: installs til
+# desc: installs tilt
 # prereq: brew
 
-kubectl krew install tilt
+brew install tilt
 # brew bundle dump --global --force

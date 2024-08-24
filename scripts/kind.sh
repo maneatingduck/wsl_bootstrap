@@ -2,5 +2,5 @@
 # desc: installs kind
 # prereq: brew docker
 
-kubectl krew install kind
+brew install kind
 # brew bundle dump --global --force

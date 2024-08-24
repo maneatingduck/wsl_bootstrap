@@ -224,9 +224,10 @@ done
         [[ -v $help ]] && printf 'inf: added %saptclean\n' "$aptu"
         
         # ...and will put aptupgrade first, but won't add aptupgrade if explicitly requested not to
+        ma=" aptupgrade "
         effectiveactions="$(sed -E "s#$ma##g"<<<"$effectiveactions")"
-        if [[ -z $noapt ]];then
-            ma=" aptupgrade "
+        # echo "debdeb: '${effectiveactions}'"
+        if [[ -z $noapt && ! $effectiveactions =~ $ma  ]];then
             aptu="aptupgrade, "
             effectiveactions="${ma}${effectiveactions}"
             printf "inf: added aptupgrade, use 'noapt' to disable\n" 
@@ -234,8 +235,9 @@ done
         # else 
         #     printf "inf: 'noapt' supplied don't add aptupgrade\n" 
         fi
-        if [[ -z $noconfig ]];then
-            ma=" config "
+        ma=" config "
+        effectiveactions="$(sed -E "s#$ma##g"<<<"$effectiveactions")"
+        if [[ -z $noconfig && ! $effectiveactions =~ $ma ]];then
             effectiveactions="${ma}${effectiveactions}"
             printf "inf: added config, use 'noconfig' to disable\n" 
         # else 
@@ -303,7 +305,9 @@ mkdir -p logs;
 find logs ! -name 'currentaction.log' -type f -exec rm -f {} +
 for a in ${effectiveactions// / };do 
     # echo -n ''>logs/$a.txt
-    printf "Executing '%s'" "$a">logs/currentaction.log
+    printf "\n************************************************\n">logs/currentaction.log
+    printf "Executing '%s'\n" "$a">>logs/currentaction.log
+    printf "************************************************\n\n">>logs/currentaction.log
     start=$(($(date +%s%N)/1000000))
    cd $dirname
    printf "Executing '%s'" "$a";

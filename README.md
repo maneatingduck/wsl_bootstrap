@@ -150,8 +150,9 @@ chmod -R 700 ~/.ssh
 cp /mnt/c/Users/$winusername/.gitconfig ~/.gitconfig
 
 # permanently mount network drives in your home directory, for instance y:
-mkdir -p ~/y 
-echo "y: /home/$USER/y drvfs defaults 0 0"|sudo tee -a /etc/fstab
+mkdir -p /mnt/y 
+echo "y: /mnt/y drvfs defaults 0 0"|sudo tee -a /etc/fstab
+ln -sf /mnt/y ~/y
 sudo mount -a
 
 ```

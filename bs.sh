@@ -75,7 +75,7 @@ for p in "${!presets[@]}"; do
     for a in ${actions// / };do
         if [[ ${availableactions[$a]+"a"} != "a" && ${presets[$a]+"a"} != "a"  ]]; 
         then 
-            printf "ERROR: preset.txt: '%s': action '%s' not in available actions or presets, please edit presets.txt\n" "$preset" "$a"
+            printf "ERROR: preset.txt: '%s': action '%s' not in available actions or presets, please edit presets.txt\n" "$p" "$a"
             help=1
         fi
   done    

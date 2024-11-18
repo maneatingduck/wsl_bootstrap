@@ -1,5 +1,5 @@
 kubernetes_management: brew k9s az oc kubectl krew jq yq cnpg kubelogin
 kubernetes: kubernetes_management k3d kind tilt ctlptl
 omega: kubernetes_management nukesnap config terraform vault tsh
-ops: kubernetes_management nukesnap config terraform vault tsh
+ops: kubernetes_management nukesnap config terraform vault tsh helm argocd kubectl_neat
 dev: kubernetes kubernetes_management dotnet helm

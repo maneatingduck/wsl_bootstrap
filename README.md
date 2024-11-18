@@ -35,7 +35,7 @@ Some wsl commands:
 wsl -l
 
 # launch a specific distro
-wsl -d aa
+wsl -d ops
 
 # remove a distro and its hard drive file (vhdx)
 wsl --unregister -d template

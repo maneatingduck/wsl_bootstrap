@@ -326,6 +326,6 @@ allend=$(($(date +%s%N)/1000000))
 allms=$(($allend-$allstart))
 printf '\nAll done in %s ms \n\n' "$allms"|tee logs/currentaction.log
 # printf 'done\n' > logs/currentaction.log
-cp -v hostscripts/* ~
+
 . ~/.bashrc
 . ~/.profile

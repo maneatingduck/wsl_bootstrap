@@ -2,10 +2,43 @@
 These scripts are intended to help you create and setup wsl installations for use with VMs that have no connection to internet and Linux repos. 
 
 After running the setup scripts (bs.sh and/or individual scripts) you can export the distro to a tar file, copy it to your VM, and import it into your VMs WSL instance.
+# TLDR
+In host powershell terminal, with all vms turned off:
+```
+get-vm |Set-VMProcessor -ExposeVirtualizationExtensions $true
+```
+Inside the VM:
+
+Install a preview or stable version of wsl2 from https://github.com/microsoft/WSL/releases
+
+
+```
+# write windows wsl-config
+write-host "[experimental]`nautoMemoryReclaim=dropcache`nnetworkingMode=mirrored`ndnsTunneling=true`nfirewall=true`n#autoProxy=false`na">$HOME\.wslconfig
+
+# enable hyper-v (run as admin) and reboot
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+
+# reboot
+# create directory structure:
+cd $HOME;mkdir -Force $HOME\wsl\tar;mkdir -Force $HOME\wsl\vhdx;mkdir -force $HOME\wsl\wsl_bootstrap;cd $HOME\wsl
+```
+
+Now you'll need a .tar file with a distro inside it. Create one yourself by exporting from an existing wsl install somewhere 
+or get a ready made one from DevInfra  
+Put it in the wsl\tar directory inside your home directory
+
+```
+wsl --import example $HOME\wsl\vhdx\example $HOME\wsl\tar\example.tar
+
+# run it
+wsl -d example
+```
+
 
 # WSL version(s) and installation
 We'll assume that you start with no wsl installed.
-The import/exports should work with any WSL 2 installation, but I prefer the (currently) pre-release WSL versions found at https://github.com/microsoft/WSL/releases
+The import/exports should work with any WSL 2 installation, but I prefer the (currently) pre-release WSL versions found at https://github.com/microsoft/WSL/releases  
 WSL keeps its global configuration in the file .wslconfig in your windows home directory. We can set some defaults to make it play nice with windows networking, here's an example:
 ```
 [experimental]
@@ -15,8 +48,11 @@ dnsTunneling=true
 firewall=true
 #autoProxy=false
 ```
-# Hyper-V nested virtualization
-If you're installing in a virtual machine, you need to enable nested virtualization with the machine turned off. 
+# VM Nested virtualization and Hyper-V
+
+## nested virtualization
+
+If you're installing in a virtual machine, you need to enable nested virtualization with the machine turned off, since wsl uses the Hyper-V feature.  
 Run the following powershell command on the host. The example assumes that the vm is called sigma-something:
 ```
 #set for single vm whose name starts with "Sigma"
@@ -24,6 +60,16 @@ get-vm -Name "Sigma*"|Set-VMProcessor -ExposeVirtualizationExtensions $true
 
 #set for all VMs
 get-vm |Set-VMProcessor -ExposeVirtualizationExtensions $true
+```
+## Enable Hyper-V inside the vm
+We need this in order to be able to run wsl. Wsl --install will enable this for you, but that only works if you're online.
+
+Log in to the VM
+GUI: In start menu, search for Turn Windows features on or off, enable all Hyper-V features  
+
+Powershell as Admin:
+```
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
 ```
 # wsl commands and files
 You'll need a directory structure and some commands for manipulating distros and tar files in powershell. Here's my suggested structure, which this guide will assume:
@@ -40,10 +86,14 @@ C:\Users\aa303\wsl
 ```
 To create this directory structure, run the following commands and checkout this repo in wsl_bootstrap:
 ```
-cd $HOME;mkdir -Force wsl\tar;mkdir -Force wsl\vhdx;mkdir -force wsl\wsl_bootstrap;cd wsl\wsl_bootstrap
+cd $HOME;mkdir -Force $HOME\wsl\tar;mkdir -Force $HOME\wsl\vhdx;mkdir -force $HOME\wsl\wsl_bootstrap;cd $HOME\wsl
 ```
 Some wsl commands:
 ```
+# make a directory for the .vhdx file and import a distro
+mkdir -p ..\vhdx\ops 
+wsl --import -d ops ..\vhdx\ops ..\tar\ops.tar
+
 # list all installed distros
 wsl -l
 
@@ -55,10 +105,6 @@ wsl --unregister -d template
 
 # export a wsl distro to a tar file for copying to another machine
 wsl --export -d ops ../tar/ops.tar
-
-# make a directory for the .vhdx file and import a distro
-mkdir -p ..\vhdx\ops 
-wsl --import -d ops ..\vhdx\ops ..\tar\ops.tar
 
 ```
 
@@ -142,31 +188,12 @@ You should find yourself within the new distro in the wsl_bootstrap directory, n
 . bs.sh y omega
 ```
 
-## host links, mounts and config
+## mounts and config from windows in the produced distro
 
-After copying and importing the image in a vm/machine I usually create some convenient shortcuts in my wsl home directory, I'll just leave the commands here. 
-PS ssh-keys bør opprettes og legges i host-os på VM, og kun kopieres til 
+We have provisioned the distro with a couple of scripts you can run in your home directory:
+### mount_network_drives.sh
 
-```
-# set windows username for copying files from windows home directory
-winusername=aa303
+This script will attempt to get all network drives from Windows Powershell, create entries in /etc/fstab, and mount them in /mnt
 
-# create symbolic link to windows home dir, ie. aa303
-ln -sf /mnt/c/Users/$winusername ~/$winusername
-
-# copy ssh keys from windows for ie. gitlab
-mkdir -p ~/.ssh 
-cp /mnt/c/Users/$winusername/.ssh/* ~/.ssh
-chmod -R 700 ~/.ssh
-
-# copy git config
-cp /mnt/c/Users/$winusername/.gitconfig ~/.gitconfig
-
-# permanently mount network drives in your home directory, for instance y:
-mkdir -p /mnt/y 
-echo "y: /mnt/y drvfs defaults 0 0"|sudo tee -a /etc/fstab
-ln -sf /mnt/y ~/y
-sudo mount -a
-
-```
-
+### winconfig.sh
+This script will copy the .ssh directory and .gitconfig file from Windows if they exist. Suggestions for other migrations are welcome :)

@@ -33,5 +33,5 @@ do
     fi
 
 done
-
-sudo mount -a
+printf "\nMounting:\n"
+sudo mount -av

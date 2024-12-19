@@ -15,7 +15,16 @@ dnsTunneling=true
 firewall=true
 #autoProxy=false
 ```
+# Hyper-V nested virtualization
+If you're installing in a virtual machine, you need to enable nested virtualization with the machine turned off. 
+Run the following powershell command on the host. The example assumes that the vm is called sigma-something:
+```
+#set for single vm whose name starts with "Sigma"
+get-vm -Name "Sigma*"|Set-VMProcessor -ExposeVirtualizationExtensions $true
 
+#set for all VMs
+get-vm |Set-VMProcessor -ExposeVirtualizationExtensions $true
+```
 # wsl commands and files
 You'll need a directory structure and some commands for manipulating distros and tar files in powershell. Here's my suggested structure, which this guide will assume:
  ```
@@ -28,6 +37,10 @@ C:\Users\aa303\wsl
                 └── wsl_bootstrap (this repo)
                     ├── logs
                     └── scripts
+```
+To create this directory structure, run the following commands and checkout this repo in wsl_bootstrap:
+```
+cd $HOME;mkdir -Force wsl\tar;mkdir -Force wsl\vhdx;mkdir -force wsl\wsl_bootstrap;cd wsl\wsl_bootstrap
 ```
 Some wsl commands:
 ```

@@ -193,7 +193,7 @@ effectiveactions=$(sed -E 's#\s+#  #g;s# *$|^ *# #g'<<<"$sortedactions")
 
 #add postreqs, they go last
 n=$(sed -E 's#\s+# #g;s# $|^ ##g'<<<"$effectiveactions")
-for a in ${n// / } ;do
+    for a in ${n// / } ;do
     if [[ ${postreqstrings[$a]+"a"} == "a"  ]];then 
         p=$(sed 's#\s+# #g;s# $|^ ##g' <<<${postreqstrings["$a"]})
         for p2 in ${p// / };do
@@ -326,6 +326,6 @@ allend=$(($(date +%s%N)/1000000))
 allms=$(($allend-$allstart))
 printf '\nAll done in %s ms \n\n' "$allms"|tee logs/currentaction.log
 # printf 'done\n' > logs/currentaction.log
-
+cp -v hostscripts/* ~
 . ~/.bashrc
 . ~/.profile

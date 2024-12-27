@@ -1,6 +1,8 @@
 #!/usr/bin/bash
 inp="$*"
 dirname="$(realpath $(dirname "${BASH_SOURCE[0]}"))"
+pwd=$(pwd)
+cd $dirname
 # inp="${i:-help}"
 (return 0 2>/dev/null) && sourced=1 || sourced=0
 if [[ $sourced == "0" ]]; then scriptname=$0;else scriptname=${BASH_SOURCE[0]};fi
@@ -329,3 +331,6 @@ printf '\nAll done in %s ms \n\n' "$allms"|tee logs/currentaction.log
 
 . ~/.bashrc
 . ~/.profile
+printf "command_line:'%s'" $inp>>~/wsl_bootstrap_status
+printf "scripts:'%s'" $effectiveactions>>~/wsl_bootstrap_status
+cd $pwd

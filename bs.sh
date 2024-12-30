@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 inp="$*"
+inputargs="${inp[*]}"
 dirname="$(realpath $(dirname "${BASH_SOURCE[0]}"))"
 pwd=$(pwd)
 cd $dirname
@@ -331,6 +332,6 @@ printf '\nAll done in %s ms \n\n' "$allms"|tee logs/currentaction.log
 
 . ~/.bashrc
 . ~/.profile
-printf "command_line:'%s'" $inp>>~/wsl_bootstrap_status
-printf "scripts:'%s'" $effectiveactions>>~/wsl_bootstrap_status
+printf "command_line:'%s'\n" "${inputargs}" >>~/wsl_bootstrap_status
+printf "scripts:'%s'\n" "${effectiveactions}" >>~/wsl_bootstrap_status
 cd $pwd

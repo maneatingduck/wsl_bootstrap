@@ -9,7 +9,7 @@ fi
 homebasename=$(basename $homedir)
 if [ ! -e ~/$homebasename ]; then
   ln -s $homedir ~
-  printf "\ncreated link %s -> %s " "~/$homebasename" "$homedir\n"
+  printf "\ncreated link %s -> %s\n" "~/$homebasename" "$homedir"
 fi
 
 if [ ! -d $homedir/.ssh ]; then 
@@ -17,8 +17,9 @@ if [ ! -d $homedir/.ssh ]; then
 else
   if [ -d ~/.ssh ]; then
     printf "\n~/.ssh already exists. You can use the following commands to copy any keys from windows, overwriting existing ones:\n"
-    printf "\ncp -rv %s ~/.ssh; chmod -R 700 ~/.ssh\n" "${homedir}/.ssh\n"
+    printf "\ncp -rv %s ~/.ssh; chmod -R 700 ~/.ssh\n" "${homedir}/.ssh"
   else
+    printf "\ncopying contents of %s to ~/.ssh and setting permissions 700" "${homedir}/.ssh"
     cp -rv $homedir/.ssh ~/.ssh
     chmod -R 700 ~/.ssh
   fi

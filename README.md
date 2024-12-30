@@ -21,11 +21,14 @@ write-host "[experimental]`nautoMemoryReclaim=dropcache`nnetworkingMode=mirrored
 # create directory structure:
 cd $HOME;mkdir -Force $HOME\wsl\tar;mkdir -Force $HOME\wsl\vhdx;mkdir -force $HOME\wsl\wsl_bootstrap;cd $HOME\wsl
 ```
-
-Now you'll need a .tar file with a distro inside it. Create one yourself by exporting from an existing wsl install somewhere else or get a ready made one from DevInfra. Put it in the wsl\tar directory inside your home directory. 
+If you're connected to internet you can run the following to get the default ms-provided ubuntu-installation:
+```
+wsl --install
+```
+Otherwise you'll need a .tar file with a distro inside it. Create one yourself by exporting from an existing wsl install somewhere else or get a ready made one from DevInfra. Put it in the wsl\tar directory inside your home directory. Tip: wsl can also import .tar.gz, which will reduce the file size to about 30%. 
 
 ```
-wsl --import example $HOME\wsl\vhdx\example $HOME\wsl\tar\example.tar
+wsl --import example $HOME\wsl\vhdx\example $HOME\wsl\tar\example.tar.gz
 
 # run it
 wsl -d example

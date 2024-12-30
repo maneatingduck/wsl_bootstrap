@@ -3,8 +3,9 @@ These scripts are intended to help you create and setup wsl installations for us
 
 After running the setup scripts (bs.sh and/or individual scripts) you can export the distro to a tar file, copy it to your VM, and import it into your VMs WSL instance.
 # TLDR
-If you're running this on a Hyper-V VM, we need to turn on nested virtualization.  
-In host powershell terminal, with all vms turned off:
+These instructions are meant to get you a working wsl install, optionally offline. It will work with vpn and includes host dns resolution.
+    
+If you're running this on a Hyper-V VM, we need to turn on nested virtualization. In host powershell terminal, with all vms turned off:
 ```
 get-vm |Set-VMProcessor -ExposeVirtualizationExtensions $true
 ```
@@ -13,7 +14,7 @@ Inside the VM or bare-metal Win11 PC we need to enable Hyper-V. In Powershell as
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
 ```
 Reboot, it's the only way to be sure.  
-Install a preview or stable version of wsl2 from https://github.com/microsoft/WSL/releases  
+Download and install a preview or stable version of wsl2 from https://github.com/microsoft/WSL/releases  
 Launch a Powershell terminal to do some setup:
 ```
 # write windows wsl-config
@@ -25,7 +26,7 @@ If you're connected to internet you can run the following to get the default ms-
 ```
 wsl --install
 ```
-Otherwise you'll need a .tar file with a distro inside it. Create one yourself by exporting from an existing wsl install somewhere else or get a ready made one from DevInfra. Put it in the wsl\tar directory inside your home directory. Tip: wsl can also import .tar.gz, which will reduce the file size to about 30%. 
+Otherwise you'll need a .tar file with a distro inside it. Create one yourself by exporting from an existing wsl install somewhere else or get a ready made one from DevInfra. Put it in the wsl\tar directory inside your home directory. Tip: wsl can also import .tar.gz, which will reduce the file size to about a third of the original. 
 
 ```
 wsl --import example $HOME\wsl\vhdx\example $HOME\wsl\tar\example.tar.gz
